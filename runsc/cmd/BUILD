@@ -27,6 +27,7 @@ go_library(
         "spec.go",
         "start.go",
         "state.go",
+        "update.go",
         "wait.go",
     ],
     importpath = "gvisor.googlesource.com/gvisor/runsc/cmd",
