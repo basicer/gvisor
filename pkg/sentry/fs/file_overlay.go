@@ -316,8 +316,16 @@ func (*overlayFileOperations) ConfigureMMap(ctx context.Context, file *File, opt
 }
 
 // Ioctl implements fs.FileOperations.Ioctl and always returns ENOTTY.
-func (*overlayFileOperations) Ioctl(ctx context.Context, io usermem.IO, args arch.SyscallArguments) (uintptr, error) {
-	return 0, syserror.ENOTTY
+func (o *overlayFileOperations) Ioctl(ctx context.Context, io usermem.IO, args arch.SyscallArguments) (uintptr, error) {
+	if o.upper == nil && o.lower == nil {
+		panic("invalid overlayEntry, needs at least one Inode")
+	}
+
+	if o.upper != nil {
+		return o.upper.FileOperations.Ioctl(ctx, io, args)
+	}
+
+	return o.lower.FileOperations.Ioctl(ctx, io, args)
 }
 
 // readdirEntries returns a sorted map of directory entries from the

@@ -19,6 +19,7 @@ import (
 	"math"
 
 	"gvisor.googlesource.com/gvisor/pkg/abi/linux"
+	"gvisor.googlesource.com/gvisor/pkg/sentry/arch"
 	"gvisor.googlesource.com/gvisor/pkg/sentry/context"
 	"gvisor.googlesource.com/gvisor/pkg/sentry/fs"
 	"gvisor.googlesource.com/gvisor/pkg/sentry/fs/fsutil"
@@ -53,6 +54,52 @@ func (n *nullDevice) DeprecatedPwritev(_ context.Context, src usermem.IOSequence
 // Truncate should be simply ignored for character devices on linux.
 func (n *nullDevice) Truncate(context.Context, *fs.Inode, int64) error {
 	return nil
+}
+
+// +stateify savable
+type nottaDevice struct {
+	ramfs.Entry
+}
+
+func newNottaDevice(ctx context.Context, owner fs.FileOwner, mode linux.FileMode) *nottaDevice {
+	n := &nottaDevice{}
+	n.InitEntry(ctx, owner, fs.FilePermsFromMode(mode))
+	return n
+}
+
+// DeprecatedPreadv reads data from the device.
+func (n *nottaDevice) DeprecatedPreadv(ctx context.Context, dst usermem.IOSequence, offset int64) (int64, error) {
+	return 0, nil
+}
+
+// DeprecatedPwritev discards writes.
+func (n *nottaDevice) DeprecatedPwritev(_ context.Context, src usermem.IOSequence, offset int64) (int64, error) {
+	return src.NumBytes(), nil
+}
+
+// Truncate should be simply ignored for character devices on linux.
+func (n *nottaDevice) Truncate(context.Context, *fs.Inode, int64) error {
+	return nil
+}
+
+// GetFile overrides ramfs.Entry.GetFile and returns a zeroFile instead.
+func (n *nottaDevice) GetFile(ctx context.Context, dirent *fs.Dirent, flags fs.FileFlags) (*fs.File, error) {
+	// Allow pread(2) and pwrite(2) on this file.
+	flags.Pread = true
+	flags.Pwrite = true
+
+	return fs.NewFile(ctx, dirent, flags, &nottaFileOperations{
+		FileOperations: &fsutil.Handle{HandleOperations: dirent.Inode.HandleOps()},
+	}), nil
+}
+
+// +stateify savable
+type nottaFileOperations struct {
+	fs.FileOperations
+}
+
+func (*nottaFileOperations) Ioctl(ctx context.Context, io usermem.IO, args arch.SyscallArguments) (uintptr, error) {
+	return 0, nil
 }
 
 // +stateify savable
