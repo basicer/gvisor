@@ -37,9 +37,12 @@ Vagrant.configure("2") do |config|
      wget -nv https://github.com/bazelbuild/bazel/releases/download/0.21.0/bazel-0.21.0-installer-linux-x86_64.sh
      chmod +x bazel-0.21.0-installer-linux-x86_64.sh
      ./bazel-0.21.0-installer-linux-x86_64.sh
-     cd /vagrant && bazel build runsc
+     cd /vagrant
+     echo "Building..."
+     sudo -H -u vagrant bazel build runsc
      echo ewogICAgImRlZmF1bHQtcnVudGltZSI6ICJydW5zYyIsCiAgICAicnVudGltZXMiOiB7CiAgICAgICAgInJ1bnNjIjogewogICAgICAgICAgICAicGF0aCI6ICIvdmFncmFudC9iYXplbC1iaW4vcnVuc2MvbGludXhfYW1kNjRfcHVyZV9zdHJpcHBlZC9ydW5zYyIKICAgICAgICB9CiAgICB9Cn0K | base64 -d > /etc/docker/daemon.json
-     sed -i 's/-H .*/\0 -H tcp:\/\/0.0.0.0:2375/' /lib/systemd/system/docker.service
+     sed -i 's/-H .*/\\0 -H tcp:\\/\\/0.0.0.0:2375/' /lib/systemd/system/docker.service
+     chmod 777 /home/vagrant/.cache/
      systemctl daemon-reload
      systemctl restart docker      
   SHELL
