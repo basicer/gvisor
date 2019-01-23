@@ -339,8 +339,8 @@ func (*overlayFileOperations) ConfigureMMap(ctx context.Context, file *File, opt
 
 // Ioctl implements fs.FileOperations.Ioctl
 func (o *overlayFileOperations) Ioctl(ctx context.Context, io usermem.IO, args arch.SyscallArguments) (uintptr, error) {
-	o.copyMu.RLock()
-	defer o.copyMu.RUnlock()
+	o.upperMu.RLock()
+	defer o.upperMu.RUnlock()
 
 	// Assert that there is at least one upper or lower entry.
 	if o.upper == nil && o.lower == nil {
