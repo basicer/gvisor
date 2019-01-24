@@ -12,6 +12,7 @@ go_library(
         "null.go",
         "notta.go",
         "random.go",
+        "fb.go",
     ],
     importpath = "gvisor.googlesource.com/gvisor/pkg/sentry/fs/dev",
     visibility = ["//pkg/sentry:internal"],
@@ -33,5 +34,9 @@ go_library(
         "//pkg/sentry/usermem",
         "//pkg/syserror",
         "//pkg/waiter",
+        "//pkg/sentry/arch",
+        "//pkg/sentry/unimpl",
+        "//pkg/log",
+        "//pkg/sentry/usage"
     ],
 )

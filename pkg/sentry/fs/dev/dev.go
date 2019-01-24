@@ -18,6 +18,7 @@ package dev
 import (
 	"math"
 
+	"gvisor.googlesource.com/gvisor/pkg/log"
 	"gvisor.googlesource.com/gvisor/pkg/sentry/context"
 	"gvisor.googlesource.com/gvisor/pkg/sentry/fs"
 	"gvisor.googlesource.com/gvisor/pkg/sentry/fs/ashmem"
@@ -33,6 +34,17 @@ func newCharacterDevice(iops fs.InodeOperations, msrc *fs.MountSource) *fs.Inode
 		InodeID:   devDevice.NextIno(),
 		BlockSize: usermem.PageSize,
 		Type:      fs.CharacterDevice,
+	})
+}
+
+func newCharacterDeviceMM(iops fs.InodeOperations, msrc *fs.MountSource, maj uint16, min uint32) *fs.Inode {
+	return fs.NewInode(iops, msrc, fs.StableAttr{
+		DeviceID:        devDevice.DeviceID(),
+		InodeID:         devDevice.NextIno(),
+		BlockSize:       usermem.PageSize,
+		Type:            fs.CharacterDevice,
+		DeviceFileMajor: maj,
+		DeviceFileMinor: min,
 	})
 }
 
@@ -95,6 +107,14 @@ func New(ctx context.Context, msrc *fs.MountSource, binderEnabled bool, ashmemEn
 		// If no devpts is mounted, this will simply be a dangling
 		// symlink, which is fine.
 		"ptmx": newSymlink(ctx, "pts/ptmx", msrc),
+	}
+
+	if true {
+		ffb := newFbDevice(ctx, fs.RootOwner, fs.FilePermsFromMode(0666))
+		ino := newCharacterDeviceMM(ffb, msrc, 29, 0)
+		contents["fb0"] = ino
+
+		log.Warningf("Registered fb0 as %s", contents["fb0"])
 	}
 
 	if binderEnabled {
