@@ -10,6 +10,7 @@ go_library(
         "fs.go",
         "full.go",
         "null.go",
+        "notta.go",
         "random.go",
     ],
     importpath = "gvisor.googlesource.com/gvisor/pkg/sentry/fs/dev",
