@@ -447,6 +447,10 @@ func (s *Socket) Read(ctx context.Context, _ *fs.File, dst usermem.IOSequence, _
 	})
 }
 
+func (s *Socket) Publish(ctx context.Context, ms *MessageSet) *syserr.Error {
+	return s.sendResponse(ctx, ms)
+}
+
 // sendResponse sends the response messages in ms back to userspace.
 func (s *Socket) sendResponse(ctx context.Context, ms *MessageSet) *syserr.Error {
 	// Linux combines multiple netlink messages into a single datagram.
@@ -545,7 +549,7 @@ func (s *Socket) processMessages(ctx context.Context, buf []byte) *syserr.Error 
 		}
 
 		ms := NewMessageSet(s.portID, hdr.Seq)
-		if err := s.protocol.ProcessMessage(ctx, hdr, data, ms); err != nil {
+		if err := s.protocol.ProcessMessage(ctx, hdr, data, ms, s); err != nil {
 			log.Warningf("Sad")
 			return err
 		}

@@ -36,7 +36,7 @@ type Protocol interface {
 	// If err == nil, any messages added to ms will be sent back to the
 	// other end of the socket. Setting ms.Multi will cause an NLMSG_DONE
 	// message to be sent even if ms contains no messages.
-	ProcessMessage(ctx context.Context, hdr linux.NetlinkMessageHeader, data []byte, ms *MessageSet) *syserr.Error
+	ProcessMessage(ctx context.Context, hdr linux.NetlinkMessageHeader, data []byte, ms *MessageSet, s *Socket) *syserr.Error
 }
 
 // Provider is a function that creates a new Protocol for a specific netlink
