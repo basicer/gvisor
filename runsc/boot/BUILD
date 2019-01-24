@@ -58,6 +58,7 @@ go_library(
         "//pkg/sentry/socket/hostinet",
         "//pkg/sentry/socket/netlink",
         "//pkg/sentry/socket/netlink/route",
+        "//pkg/sentry/socket/netlink/audit",
         "//pkg/sentry/socket/unix",
         "//pkg/sentry/state",
         "//pkg/sentry/strace",

@@ -61,6 +61,7 @@ import (
 	"gvisor.googlesource.com/gvisor/pkg/sentry/socket/epsocket"
 	"gvisor.googlesource.com/gvisor/pkg/sentry/socket/hostinet"
 	_ "gvisor.googlesource.com/gvisor/pkg/sentry/socket/netlink"
+	_ "gvisor.googlesource.com/gvisor/pkg/sentry/socket/netlink/audit"
 	_ "gvisor.googlesource.com/gvisor/pkg/sentry/socket/netlink/route"
 	_ "gvisor.googlesource.com/gvisor/pkg/sentry/socket/unix"
 )
