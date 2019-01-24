@@ -65,6 +65,9 @@ func New(ctx context.Context, msrc *fs.MountSource, binderEnabled bool, ashmemEn
 		"stderr": newSymlink(ctx, "/proc/self/fd/2", msrc),
 
 		"null": newCharacterDevice(newNullDevice(ctx, fs.RootOwner, 0666), msrc),
+		"tty":  newCharacterDevice(newNottaDevice(ctx, fs.RootOwner, 0666), msrc),
+		"tty0": newCharacterDevice(newNottaDevice(ctx, fs.RootOwner, 0666), msrc),
+
 		"zero": newCharacterDevice(newZeroDevice(ctx, fs.RootOwner, 0666), msrc),
 		"full": newCharacterDevice(newFullDevice(ctx, fs.RootOwner, 0666), msrc),
 
@@ -119,4 +122,12 @@ type readZeros struct{}
 // Read implements fs.FileOperations.Read.
 func (readZeros) Read(ctx context.Context, file *fs.File, dst usermem.IOSequence, offset int64) (int64, error) {
 	return dst.ZeroOut(ctx, math.MaxInt64)
+}
+
+// readZeros implements fs.FileOperations.Read with infinite null bytes.
+type readNothing struct{}
+
+// Read implements fs.FileOperations.Read.
+func (readNothing) Read(ctx context.Context, file *fs.File, dst usermem.IOSequence, offset int64) (int64, error) {
+	return 0, nil
 }
