@@ -21,6 +21,7 @@ import (
 
 	"gvisor.googlesource.com/gvisor/pkg/abi/linux"
 	"gvisor.googlesource.com/gvisor/pkg/binary"
+	"gvisor.googlesource.com/gvisor/pkg/log"
 	"gvisor.googlesource.com/gvisor/pkg/sentry/arch"
 	"gvisor.googlesource.com/gvisor/pkg/sentry/context"
 	"gvisor.googlesource.com/gvisor/pkg/sentry/device"
@@ -529,13 +530,26 @@ func (s *Socket) processMessages(ctx context.Context, buf []byte) *syserr.Error 
 
 		// TODO: ACKs not supported yet.
 		if hdr.Flags&linux.NLM_F_ACK == linux.NLM_F_ACK {
-			return syserr.ErrNotSupported
+			log.Warningf("Want Ack!!!")
+			ms := NewMessageSet(s.portID, hdr.Seq)
+			ack := ms.AddMessage(linux.NetlinkMessageHeader{
+				Type: linux.NLMSG_ERROR,
+			})
+			ack.Put(linux.NetlinkMessageError{
+				Error: 0,
+				Msg:   hdr,
+			})
+			s.sendResponse(ctx, ms)
+			log.Warningf("Sent that there ack")
+			//return syserr.ErrNotSupported
 		}
 
 		ms := NewMessageSet(s.portID, hdr.Seq)
 		if err := s.protocol.ProcessMessage(ctx, hdr, data, ms); err != nil {
+			log.Warningf("Sad")
 			return err
 		}
+		log.Warningf("Sening response: %d", len(ms.Messages))
 
 		if err := s.sendResponse(ctx, ms); err != nil {
 			return err
@@ -585,6 +599,7 @@ func (s *Socket) sendMsg(ctx context.Context, src usermem.IOSequence, to []byte,
 		return 0, syserr.FromError(err)
 	}
 
+	log.Warningf("Sending netlink message!")
 	if err := s.processMessages(ctx, buf); err != nil {
 		return 0, err
 	}

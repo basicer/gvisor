@@ -102,6 +102,11 @@ type NetlinkAttrHeader struct {
 	Type   uint16
 }
 
+type NetlinkMessageError struct {
+	Error int32
+	Msg   NetlinkMessageHeader
+}
+
 // NetlinkAttrHeaderSize is the size of NetlinkAttrHeader.
 const NetlinkAttrHeaderSize = 4
 

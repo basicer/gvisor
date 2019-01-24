@@ -31,5 +31,6 @@ go_library(
         "//pkg/syserror",
         "//pkg/tcpip",
         "//pkg/waiter",
+        "//pkg/log"
     ],
 )
