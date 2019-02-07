@@ -76,9 +76,10 @@ func New(ctx context.Context, msrc *fs.MountSource, binderEnabled bool, ashmemEn
 		"stdout": newSymlink(ctx, "/proc/self/fd/1", msrc),
 		"stderr": newSymlink(ctx, "/proc/self/fd/2", msrc),
 
-		"null": newCharacterDevice(newNullDevice(ctx, fs.RootOwner, 0666), msrc),
-		"tty":  newCharacterDevice(newNottaDevice(ctx, fs.RootOwner, 0666), msrc),
-		"tty0": newCharacterDevice(newNottaDevice(ctx, fs.RootOwner, 0666), msrc),
+		"null":    newCharacterDevice(newNullDevice(ctx, fs.RootOwner, 0666), msrc),
+		"tty":     newCharacterDevice(newNottaDevice(ctx, fs.RootOwner, 0666), msrc),
+		"tty0":    newCharacterDevice(newNottaDevice(ctx, fs.RootOwner, 0666), msrc),
+		"console": newCharacterDevice(newNottaDevice(ctx, fs.RootOwner, 0666), msrc),
 
 		"zero": newCharacterDevice(newZeroDevice(ctx, fs.RootOwner, 0666), msrc),
 		"full": newCharacterDevice(newFullDevice(ctx, fs.RootOwner, 0666), msrc),

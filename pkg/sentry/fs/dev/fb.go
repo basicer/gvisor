@@ -110,6 +110,11 @@ func (fb *fbFileOperations) ConfigureMMap(ctx context.Context, file *fs.File, op
 	return fb.backingFile.FileOperations.ConfigureMMap(ctx, file, opts)
 }
 
+type FbConsoleToFramebufferMap struct {
+	Console     uint32
+	Framebuffer uint32
+}
+
 func (*fbFileOperations) Ioctl(ctx context.Context, io usermem.IO, args arch.SyscallArguments) (uintptr, error) {
 	log.Warningf("/dev/fb0 ioctl %d", args[1].Uint)
 	switch cmd := args[1].Uint(); cmd {

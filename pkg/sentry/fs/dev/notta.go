@@ -52,7 +52,9 @@ func (n *nottaDevice) GetFile(ctx context.Context, dirent *fs.Dirent, flags fs.F
 	flags.Pread = true
 	flags.Pwrite = true
 
-	return fs.NewFile(ctx, dirent, flags, &nottaFileOperations{}), nil
+	return fs.NewFile(ctx, dirent, flags, &nottaFileOperations{
+		termios: linux.DefaultSlaveTermios,
+	}), nil
 }
 
 // +stateify savable
@@ -67,8 +69,39 @@ type nottaFileOperations struct {
 	fsutil.FileNotDirReaddir `state:"nosave"`
 
 	readNothing `state:"nosave"`
+	termios     linux.KernelTermios
 }
 
-func (*nottaFileOperations) Ioctl(ctx context.Context, io usermem.IO, args arch.SyscallArguments) (uintptr, error) {
-	return 0, nil
+func (n *nottaFileOperations) Ioctl(ctx context.Context, io usermem.IO, args arch.SyscallArguments) (uintptr, error) {
+	switch args[1].Uint() {
+	case 0x4B33: // linux.KDGKBTYPE
+		val := []byte{0x02}
+		_, err := usermem.CopyObjectOut(ctx, io, args[2].Pointer(), val, usermem.IOOpts{
+			AddressSpaceActive: true,
+		})
+		return 0, err
+	case 0x00005600: //  VT_OPENQRY
+		val := []uint32{0}
+		_, err := usermem.CopyObjectOut(ctx, io, args[2].Pointer(), val, usermem.IOOpts{
+			AddressSpaceActive: true,
+		})
+		return 0, err
+	case linux.TCGETS:
+		t := n.termios.ToTermios()
+		_, err := usermem.CopyObjectOut(ctx, io, args[2].Pointer(), t, usermem.IOOpts{
+			AddressSpaceActive: true,
+		})
+		return 0, err
+	case linux.TCSETS:
+		fallthrough
+	case linux.TCSETSW:
+		var t linux.Termios
+		_, err := usermem.CopyObjectIn(ctx, io, args[2].Pointer(), &t, usermem.IOOpts{
+			AddressSpaceActive: true,
+		})
+		n.termios.FromTermios(t)
+		return 0, err
+	default:
+		return 0, nil
+	}
 }
